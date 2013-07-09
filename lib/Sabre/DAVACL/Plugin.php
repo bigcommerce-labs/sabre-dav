@@ -598,8 +598,8 @@ class Plugin extends DAV\ServerPlugin {
      * @param string $collectionUri      The principal collection to search on.
      *                                   If this is ommitted, the standard
      *                                   principal collection-set will be used.
-     * @return array     This method returns an array structure similar to
-     *                  Sabre\DAV\Server::getPropertiesForPath. Returned
+     * @return array     This method returns an array of path properties returned from
+     *                  Sabre\DAV\Server::getPathProperties. Returned
      *                  properties are index by a HTTP status code.
      *
      */
@@ -632,7 +632,7 @@ class Plugin extends DAV\ServerPlugin {
 
         foreach($lookupResults as $lookupResult) {
 
-            list($matches[]) = $this->server->getPropertiesForPath($lookupResult, $requestedProperties, 0);
+            $matches[] = $this->server->getPathProperties($lookupResult, $requestedProperties);
 
         }
 
@@ -1201,12 +1201,14 @@ class Plugin extends DAV\ServerPlugin {
      */
     protected function expandProperties($path, array $requestedProperties, $depth) {
 
-        $foundProperties = $this->server->getPropertiesForPath($path, array_keys($requestedProperties), $depth);
+        $foundProperties = $this->server->getNodesForPath($path, $depth);
 
         $result = array();
-
-        foreach($foundProperties as $node) {
-
+        $nameProperties = array_keys($requestedProperties);
+        foreach($foundProperties as $nodePath => $node) {
+            if(($node = $this->server->getPathProperties($nodePath, $nameProperties, $node)) === false) {
+                continue;
+            }
             foreach($requestedProperties as $propertyName=>$childRequestedProperties) {
 
                 // We're only traversing if sub-properties were requested
