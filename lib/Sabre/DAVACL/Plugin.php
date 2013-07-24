@@ -1201,7 +1201,9 @@ class Plugin extends DAV\ServerPlugin {
      */
     protected function expandProperties($path, array $requestedProperties, $depth) {
 
-        $foundProperties = $this->server->getNodesForPath($path, $depth);
+        $getChildren = ($depth != 0) ? true : false;
+
+        $foundProperties = $this->server->getNodesForPath($path, $getChildren);
 
         $result = array();
         $nameProperties = array_keys($requestedProperties);
