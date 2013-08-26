@@ -1359,9 +1359,10 @@ class Server {
      * @param array $propertyNames
      */
     public function getProperties($path, $propertyNames) {
-        $result = $this->getPathProperties($path, $propertyNames);
+        if(($result = $this->getPathProperties($path, $propertyNames)) === false) {
+            return array();
+        }
         return $result[200];
-
     }
 
     /**
