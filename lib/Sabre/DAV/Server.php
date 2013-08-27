@@ -713,9 +713,7 @@ class Server {
 
         $requestedProperties = $this->parsePropFindRequest($this->httpRequest->getBody(true));
 
-        $depth = $this->getHTTPDepth(1);
-        // The only two options for the depth of a propfind is 0 or 1
-        if ($depth!=0) $depth = 1;
+        $getChildren = ($this->getHTTPDepth(1) != 0) ? true : false;
 
         // This is a multi-status response
         $this->httpResponse->sendStatus(207);
@@ -731,7 +729,7 @@ class Server {
 
         $prefer = $this->getHTTPPrefer();
         $minimal = $prefer['return-minimal'];
-        $data = $this->generateMultiStatus($this->getNodesForPath($uri,$depth), $minimal, $requestedProperties);
+        $data = $this->generateMultiStatus($this->getNodesForPath($uri,$getChildren), $minimal, $requestedProperties);
         $this->httpResponse->sendBody($data);
 
     }
@@ -1361,9 +1359,10 @@ class Server {
      * @param array $propertyNames
      */
     public function getProperties($path, $propertyNames) {
-        $result = $this->getPathProperties($path, $propertyNames);
+        if(($result = $this->getPathProperties($path, $propertyNames)) === false) {
+            return array();
+        }
         return $result[200];
-
     }
 
     /**
@@ -1381,11 +1380,11 @@ class Server {
     public function getPropertiesForChildren($path, $propertyNames) {
 
         $result = array();
-        $i = 0;
-        foreach($this->getNodesForPath($path,1) as $path => $node) {
-            // Skipping the parent path
-            if ($i++ == 0) continue;
 
+        $nodes = $this->getNodesForPath($path,true);
+        // Skip the parent path
+        unset($nodes[key($nodes)]);
+        foreach($nodes as $path => $node) {
             if(($row = $this->getPathProperties($path, $propertyNames, $node)) === false) {
                 continue;
             }
@@ -1489,15 +1488,13 @@ class Server {
      * The list of properties should be supplied in Clark notation. If the list is empty
      * 'allprops' is assumed.
      *
-     * If a depth of 1 is requested child elements will also be returned.
+     * If getChildren is true is requested child elements will also be returned.
      *
      * @param string $path
-     * @param int $depth
+     * @param bool $getChildren
      * @return array
      */
-    public function getNodesForPath($path, $depth = 0) {
-
-        if ($depth!=0) $depth = 1;
+    public function getNodesForPath($path, $getChildren = false) {
 
         $path = rtrim($path,'/');
 
@@ -1506,14 +1503,14 @@ class Server {
         //
         // We're not doing anything with the result, but this can be helpful to
         // pre-fetch certain expensive live properties.
-        $this->broadCastEvent('beforeGetNodesForPath', array($path, $depth));
+        $this->broadCastEvent('beforeGetNodesForPath', array($path, $getChildren));
 
         $parentNode = $this->tree->getNodeForPath($path);
 
         $nodes = array(
             $path => $parentNode
         );
-        if ($depth==1 && $parentNode instanceof ICollection) {
+        if ($getChildren && $parentNode instanceof ICollection) {
             foreach($this->tree->getChildren($path) as $childNode)
                 $nodes[$path . '/' . $childNode->getName()] = $childNode;
         }

@@ -67,7 +67,7 @@ class VCFExportPlugin extends DAV\ServerPlugin {
         $this->server->httpResponse->setHeader('Content-Type','text/directory');
         $this->server->httpResponse->sendStatus(200);
 
-        $nodes = $this->server->getNodesForPath($uri,1);
+        $nodes = $this->server->getNodesForPath($uri,true);
 
         $this->server->httpResponse->sendBody($this->generateVCF($nodes));
 
