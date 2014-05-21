@@ -160,8 +160,15 @@ class Response {
     public function sendBody($body) {
 
         if (is_resource($body)) {
-
-            fpassthru($body);
+            ob_end_flush();
+            $fp = $body;
+            while (!feof($fp)) {
+                // send in 128KB chunks
+                $b = fread($fp, 131072);
+                echo $b;
+                unset($b);
+            }
+            fclose($fp);
 
         } else {
 
