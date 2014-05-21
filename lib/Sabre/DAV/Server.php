@@ -140,6 +140,13 @@ class Server {
     );
 
     /**
+     * Filename of temporary file used in `generateMultiStatus` method
+     *
+     * @var string
+     */
+     protected $tempOutputFile;
+
+    /**
      * If this setting is turned off, SabreDAV's version number will be hidden
      * from various places.
      *
@@ -263,6 +270,9 @@ class Server {
             $this->httpResponse->setHeaders($headers);
             $this->httpResponse->sendBody($DOM->saveXML());
 
+        }
+        if ($this->tempOutputFile) {
+            unlink($this->tempOutputFile);
         }
 
     }
@@ -1511,8 +1521,7 @@ class Server {
             $path => $parentNode
         );
         if ($getChildren && $parentNode instanceof ICollection) {
-            foreach($this->tree->getChildren($path) as $childNode)
-                $nodes[$path . '/' . $childNode->getName()] = $childNode;
+            $nodes = $this->tree->getChildren($path);
         }
         return $nodes;
     }
@@ -2123,7 +2132,7 @@ class Server {
      * @param bool strip404s
      * @return string
      */
-    public function generateMultiStatus(array $fileProperties, $strip404s = false, $propertyNames = array()) {
+    public function generateMultiStatus($fileProperties, $strip404s = false, $propertyNames = array()) {
 
         $dom = new \DOMDocument('1.0','utf-8');
         //$dom->formatOutput = true;
@@ -2141,11 +2150,16 @@ class Server {
             if (!is_int($key) && ($entry = $this->getPathProperties($key, $propertyNames, $entry)) === false) {
                 continue;
             }
-            $href = $entry['href'];
-            unset($entry['href']);
+            if (is_object($entry)) {
+                $href = $entry->getName();
+                $entry = $this->getPathProperties($key, $propertyNames, $entry);
+            } else {
+                $href = $entry['href'];
+                unset($entry['href']);
 
-            if ($strip404s && isset($entry[404])) {
-                unset($entry[404]);
+                if ($strip404s && isset($entry[404])) {
+                    unset($entry[404]);
+                }
             }
 
             $response = new Property\Response($href,$entry);
@@ -2153,7 +2167,10 @@ class Server {
 
         }
 
-        return $dom->saveXML();
+        $this->tempOutputFile = tempnam("/tmp", "sabreMultiStatus");
+        $dom->save($this->tempOutputFile);
+        $fp = fopen($this->tempOutputFile, 'r+');
+        return $fp;
 
     }
 

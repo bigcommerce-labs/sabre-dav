@@ -13,6 +13,8 @@ namespace Sabre\DAV;
  */
 class ObjectTree extends Tree {
 
+    const MAX_CACHE_SIZE = 1000;
+
     /**
      * The root node
      *
@@ -73,7 +75,9 @@ class ObjectTree extends Tree {
 
         }
 
-        $this->cache[$path] = $node;
+        if (count($this->cache) < self::MAX_CACHE_SIZE) {
+            $this->cache[$path] = $node;
+        }
         return $node;
 
     }
@@ -116,9 +120,11 @@ class ObjectTree extends Tree {
         $node = $this->getNodeForPath($path);
         $children = $node->getChildren();
         foreach($children as $child) {
-
-            $this->cache[trim($path,'/') . '/' . $child->getName()] = $child;
-
+            if (count($this->cache) < self::MAX_CACHE_SIZE) {
+                $this->cache[trim($path,'/') . '/' . $child->getName()] = $child;
+            } else {
+                break;
+            }
         }
         return $children;
 
