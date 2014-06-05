@@ -2167,7 +2167,7 @@ class Server {
 
         }
 
-        $this->tempOutputFile = tempnam("/tmp", "sabreMultiStatus");
+        $this->tempOutputFile = tempnam(sys_get_temp_dir(), "sabreMultiStatus");
         $dom->save($this->tempOutputFile);
         $fp = fopen($this->tempOutputFile, 'r+');
         return $fp;
