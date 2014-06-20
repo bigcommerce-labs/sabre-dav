@@ -1517,13 +1517,18 @@ class Server {
 
         $parentNode = $this->tree->getNodeForPath($path);
 
-        $nodes = array(
+        $parent = array(
             $path => $parentNode
         );
         if ($getChildren && $parentNode instanceof ICollection) {
-            $nodes = $this->tree->getChildren($path);
+            $children = $this->tree->getChildren($path);
+            $childrenIterator = ($children instanceof \Iterator) ? $children : new \ArrayIterator($children);
+            $nodes = new \AppendIterator();
+            $nodes->append(new \ArrayIterator($parent));
+            $nodes->append($childrenIterator);
+            return $nodes;
         }
-        return $nodes;
+        return $parent;
     }
 
     /**
