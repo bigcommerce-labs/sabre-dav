@@ -5,6 +5,9 @@
     "keywords": ["Framework", "WebDAV", "CalDAV", "CardDAV", "iCalendar"],
     "homepage": "http://sabre.io/",
     "license" : "BSD-3-Clause",
+    "repositories": [
+        { "type": "vcs", "url": "https://github.com/bigcommerce-labs/sabre-http" }
+    ],
     "authors": [
         {
             "name": "Evert Pot",
@@ -18,7 +21,7 @@
         "sabre/vobject": "^4.1.0",
         "sabre/event" : ">=2.0.0, <4.0.0",
         "sabre/xml"  : "^1.4.0",
-        "sabre/http" : "^4.2.1",
+        "sabre/http" : "4.2.1.2",
         "sabre/uri" : "^1.0.1",
         "ext-dom": "*",
         "ext-pcre": "*",
