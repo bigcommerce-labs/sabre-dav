@@ -316,7 +316,7 @@ class AddressBookQueryTest extends AbstractPluginTest {
 
         $this->server->exec();
 
-        $this->assertEquals(415, $response->status, 'Incorrect status code. Full response body:' . $response->body);
+        $this->assertEquals(415, $response->status, 'Incorrect status code. Full response body:' . $response->getBodyAsString());
     }
 
     function testAddressBookProperties() {
@@ -347,12 +347,14 @@ class AddressBookQueryTest extends AbstractPluginTest {
 
         $this->server->exec();
 
-        $this->assertEquals(207, $response->status, 'Incorrect status code. Full response body:' . $response->body);
+        $body = $response->getBodyAsString();
+
+        $this->assertEquals(207, $response->status, 'Incorrect status code. Full response body:' . $body);
 
         // using the client for parsing
         $client = new DAV\Client(['baseUri' => '/']);
 
-        $result = $client->parseMultiStatus($response->body);
+        $result = $client->parseMultiStatus($body);
 
         $this->assertEquals([
             '/addressbooks/user1/book3/card3' => [
