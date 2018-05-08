@@ -13,12 +13,15 @@
             "role" : "Developer"
         }
     ],
+    "repositories": [
+      { "type": "vcs", "url": "https://github.com/bigcommerce-labs/sabre-http", "replace": { "sabre/http": "*" } }
+    ],
     "require": {
         "php": ">=5.5.0",
         "sabre/vobject": "^4.1.0",
         "sabre/event" : ">=2.0.0, <4.0.0",
         "sabre/xml"  : "^1.4.0",
-        "sabre/http" : "^4.2.1",
+        "sabre/http" : "4.2.4.1",
         "sabre/uri" : "^1.0.1",
         "ext-dom": "*",
         "ext-pcre": "*",
