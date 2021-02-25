@@ -1,12 +1,6 @@
 language: php
 php:
-  - 7.3
-  - 7.4
-
-
-env:
-  matrix:
-    - LOWEST_DEPS="" TEST_DEPS=""
+  - 7.1
 
 services:
   - mysql
@@ -18,8 +12,8 @@ before_script:
   - mysql -e 'create database sabredav_test'
   - psql -c "create database sabredav_test" -U postgres
   - psql -c "create user sabredav with PASSWORD 'sabredav';GRANT ALL PRIVILEGES ON DATABASE sabredav_test TO sabredav" -U postgres
-  #  - composer self-update
-  - composer update --prefer-dist $LOWEST_DEPS
+  - composer self-update --1
+  - composer install --prefer-dist -vv
 
 # addons:
 #    postgresql: "9.5"
